@@ -1,6 +1,6 @@
 {
-    "name": "blog/php-vanilla",
-    "description": "Blog with PHP Vanilla and modern dependencies",
+    "name": "api/blobal",
+    "description": "api php avec ORM eloquant,faker,carbon,illuminate,phpmailer",
     "require": {
         "php": "^8.0",
         "illuminate/database": "^10.0",
