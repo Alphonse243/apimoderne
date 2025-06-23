@@ -1,64 +1,32 @@
 <?php
+require '../../vendor/autoload.php';
+require '../../config/database.php';    
 use App\Models\Entreprise;
-use Illuminate\Database\Capsule\Manager as Capsule;
-use Illuminate\Http\Request;
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
-header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+// Vérifie que la requête est bien en POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // On suppose qu'il n'y a qu'une seule entreprise à mettre à jour (id = 1)
+    $entreprise = Entreprise::find(1);
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'error' => 'Méthode non autorisée']);
-    http_response_code(405);
-   exit;
-}
+    if (!$entreprise) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'message' => 'Entreprise non trouvée']);
+        exit;
+    }
 
-// Récupération et validation des données
-$name = trim($_POST['name'] ?? '');
-$acronym = trim($_POST['acronym'] ?? '');
-$courte = trim($_POST['courte'] ?? '');
-$description = trim($_POST['description'] ?? '');
+    // Mettre à jour les champs avec les données reçues
+    $entreprise->name = $_POST['name'] ?? $entreprise->name;
+    $entreprise->acronym = $_POST['acronym'] ?? $entreprise->acronym;
+    $entreprise->courte = $_POST['courte'] ?? $entreprise->courte;
+    $entreprise->description = $_POST['description'] ?? $entreprise->description;
 
-// $name = 'Récupération et validation des données';
-//$name = 'Récupération et validation des données';
-//$courte = 'Récupération et validation des données';
-//$description = 'Récupération et validation des données';
-//$acronym = 'Récupération et validation des données';
+    // Sauvegarder les modifications
+    $entreprise->save();
 
-if ($acronym ==''){
-    echo json_encode(['success' => false, 'error' => 'acronym est vide']);
-    http_response_code(422);
-}
-if ($name === '' || $acronym === '' || $courte === '' || $description === '') {
-    echo json_encode(['success' => false, 'error' => 'Champs requis manquants']);
-    http_response_code(422);
+    echo json_encode(['success' => true, 'message' => 'Informations mises à jour avec succès']);
     exit;
 }
 
-try {
-    $settings = Entreprise::find(1); // Récupérer l'entreprise avec ID 1
-    if (!$settings) {
-        echo json_encode(['success' => false, 'error' => 'Entreprise non trouvée']);
-        http_response_code(404);
-        exit;
-    }
-
-    $updated = $settings->update([
-        'name' => $name,
-        'acronym' => $acronym,
-        'courte'  => $courte,
-        'description' => $description
-    ]);
-    if (!$updated) {
-        echo json_encode(['success' => false, 'error' => 'Erreur lors de la mise à jour']);
-        http_response_code(500);
-        exit;
-    }
-    echo json_encode(['success' => true]);
-    http_response_code(200);
-} catch (Exception $e) {
-    echo json_encode(['success' => false, 'error' => 'Erreur serveur']);
-    http_response_code(500);
-}
-exit;
+// Si la requête n'est pas POST
+http_response_code(405);
+echo json_encode(['success' => false, 'message' => 'Méthode non autorisée']);
