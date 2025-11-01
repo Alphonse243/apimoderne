@@ -4,7 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 // Charger les variables d'environnement
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->load();
+$dotenv->safeLoad();
 
 // Initialiser la base de données
 use Illuminate\Database\Capsule\Manager as Capsule;

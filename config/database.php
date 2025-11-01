@@ -1,34 +1,44 @@
 <?php
 
-use Illuminate\Database\Capsule\Manager as Capsule;
-$capsule = new Capsule;
+// This file returns a connection array compatible with Illuminate Database (Eloquent).
+// It supports MySQL (default) and SQLite when DB_DRIVER=sqlite.
 
-$capsule->addConnection([
-    'driver' => 'mysql',
-    'host' => $_ENV['DB_HOST'] ?? 'localhost',
-    'database' => $_ENV['DB_DATABASE'] ?? 'api-global',
-    'username' => $_ENV['DB_USERNAME'] ?? 'root',
-    'password' => $_ENV['DB_PASSWORD'] ?? '',
-    'charset' => 'utf8mb4',
-    'collation' => 'utf8mb4_unicode_ci',
-    'prefix' => '',
-]);
+// Allow selecting driver via environment variable. Defaults to mysql.
+$driver = $_ENV['DB_DRIVER'] ?? 'mysql';
 
-$capsule->setAsGlobal();
-$capsule->bootEloquent();
+if ($driver === 'sqlite') {
+    // DB_DATABASE should be a path to the sqlite file. Default to project/database/database.sqlite
+    $defaultSqlite = __DIR__ . '/../database/database.sqlite';
+    $databasePath = $_ENV['DB_DATABASE'] ?? $defaultSqlite;
 
-// return [
-//     'driver' => 'mysql',
-//     'host' => $_ENV['DB_HOST'] ?? 'localhost',
-//     'database' => $_ENV['DB_DATABASE'] ?? 'blog-php-moderne',
-//     'username' => $_ENV['DB_USERNAME'] ?? 'root',
-//     'password' => $_ENV['DB_PASSWORD'] ?? '',
-//     'charset' => 'utf8mb4',
-//     'collation' => 'utf8mb4_unicode_ci',
-//     'prefix' => '',
-// ];
+    // If the path is relative, make it relative to project root
+    if (!str_starts_with($databasePath, '/') && !str_starts_with($databasePath, "\\")) {
+        $databasePath = __DIR__ . '/../' . $databasePath;
+    }
 
-// Configuration du route
-define("base_url", "http://localhost/karma-master/"); // URL du site
-define("Route_path",$_SERVER["DOCUMENT_ROOT"].'/karma-master/'); //LE dossier root du serbeur
-$route = base_url;
+    // Ensure directory exists and file exists (touch)
+    $dbDir = dirname($databasePath);
+    if (!is_dir($dbDir)) {
+        mkdir($dbDir, 0755, true);
+    }
+    if (!file_exists($databasePath)) {
+        touch($databasePath);
+    }
+
+    return [
+        'driver' => 'sqlite',
+        'database' => $databasePath,
+        'prefix' => '',
+    ];
+} else {
+    return [
+        'driver' => 'mysql',
+        'host' => $_ENV['DB_HOST'] ?? 'localhost',
+        'database' => $_ENV['DB_DATABASE'] ?? 'api-global',
+        'username' => $_ENV['DB_USERNAME'] ?? 'root',
+        'password' => $_ENV['DB_PASSWORD'] ?? '',
+        'charset' => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
+        'prefix' => '',
+    ];
+}

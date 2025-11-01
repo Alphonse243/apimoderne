@@ -2,7 +2,7 @@
 /node_modules/
 .env.backup
 .phpunit.result.cache
-composer.lock
+# composer.lock
 npm-debug.log
 yarn-error.log
 /.idea
